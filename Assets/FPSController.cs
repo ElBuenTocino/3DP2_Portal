@@ -38,7 +38,8 @@ public class FPSController : MonoBehaviour
     public Camera m_Camera;
     public float m_MaxShootDistance = 200.0f;
     public LayerMask m_ShootLayerMask;
-    public int m_ShootButton = 0;
+    public int m_LeftShootButton = 0;
+    public int m_RightShootButton = 1;
     public bool CanShootBool;
     public AudioClip ShootSound;
 
@@ -49,6 +50,9 @@ public class FPSController : MonoBehaviour
 
     [Header("Extra")]
     public bool isAlive;
+
+    [Header("Portals")]
+    public Portal BluePortal, OrangePortal;
 
     private void Awake()
     {
@@ -158,8 +162,8 @@ public class FPSController : MonoBehaviour
             else if ((l_CollisionFlags & CollisionFlags.CollidedAbove) != 0 && m_VerticalSpeed > 0.0f)
                 m_VerticalSpeed = 0f;
 
-            //if (CanShoot() && MustShoot())
-            //    Shoot();
+            if (CanShoot() && MustShoot(out Portal portal))
+                Shoot(portal);
         }
         else
         {
@@ -169,6 +173,7 @@ public class FPSController : MonoBehaviour
 
     bool CanShoot()
     {
+        return true;
         return CanShootBool;
     }
     public void SetCanShoot(int f)
@@ -192,30 +197,49 @@ public class FPSController : MonoBehaviour
         }
     }
 
-    bool MustShoot()
+    bool MustShoot(out Portal portal)
     {
-        //if (GetComponent<GunBehaviour>().CurrentBullets >= 1)
-        //{
-            return Input.GetMouseButtonDown(m_ShootButton);
-        //}
-        //else return false;
+        if (Input.GetMouseButtonDown(m_LeftShootButton))
+        {
+            portal = BluePortal;
+            return true;
+        }
+        else if (Input.GetMouseButtonDown(m_RightShootButton))
+        {
+            portal = OrangePortal;
+            return true;
+        }
+        portal = null;
+        return false;
     }
 
     void Shoot(Portal _Portal)
     {
-        SetShootWeaponAnimation();
+        if (_Portal == null)
+        {
+            return;
+        }
+        //SetShootWeaponAnimation();
         Ray l_Ray = m_Camera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0.0f));
         if (Physics.Raycast(l_Ray, out RaycastHit l_RaycastHit, m_MaxShootDistance, m_ShootLayerMask.value))
         {
             if (_Portal.IsValidPosition(l_RaycastHit.point, l_RaycastHit.normal))
             {
                 _Portal.gameObject.SetActive(true);
+                _Portal.m_CrosshairPortal.FillCrosshair(true);
             }
             else
+            {
                 _Portal.gameObject.SetActive(false);
+                _Portal.m_CrosshairPortal.FillCrosshair(false);
+            }
+
         }
         else
+        {
             _Portal.gameObject.SetActive(false);
+            _Portal.m_CrosshairPortal.FillCrosshair(false);
+        }
     }
 
 

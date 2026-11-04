@@ -13,6 +13,12 @@ public class Portal : MonoBehaviour
     public float m_MaxAngleValidation = 5.0f;
 
     public List<Transform> m_ValidPositions;
+    public CrosshairPortal m_CrosshairPortal;
+
+    private void Start()
+    {
+        m_CrosshairPortal.FillCrosshair(false);
+    }
 
     private void Update()
     {
