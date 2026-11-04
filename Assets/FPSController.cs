@@ -1,7 +1,6 @@
 using NUnit.Framework;
 using System.Collections.Generic;
 using UnityEngine;
-
 public class FPSController : MonoBehaviour
 {
     public Transform m_PitchController;
@@ -191,53 +190,46 @@ public class FPSController : MonoBehaviour
         {
             Cursor.lockState = CursorLockMode.Locked;
         }
-    } 
+    }
 
-    //bool MustShoot()
-    //{
-    //    if (GetComponent<GunBehaviour>().CurrentBullets >= 1)
-    //    {
-    //        return Input.GetMouseButtonDown(m_ShootButton);
-    //    }
-    //    else return false;
-    //}
+    bool MustShoot()
+    {
+        //if (GetComponent<GunBehaviour>().CurrentBullets >= 1)
+        //{
+            return Input.GetMouseButtonDown(m_ShootButton);
+        //}
+        //else return false;
+    }
 
-    //void Shoot()
-    //{
-    //    MuzzleParticle.Play();
-    //    AudioSource.PlayClipAtPoint(ShootSound, transform.position,0.2f);
-    //    GetComponent<GunBehaviour>().Shoot();
-    //    SetShootWeaponAnimation();
-    //    Ray l_Ray = m_Camera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0.0f));
-    //    if (Physics.Raycast(l_Ray, out RaycastHit l_RaycastHit, m_MaxShootDistance, m_ShootLayerMask, QueryTriggerInteraction.Ignore))
-    //    {
-    //        if (l_RaycastHit.transform.gameObject.GetComponent<Target>() != null)
-    //        {
-    //            l_RaycastHit.transform.gameObject.GetComponent<Target>().GetHit();
-    //        }
-    //        else if (l_RaycastHit.collider.GetComponent<HitCollider>() != null)
-    //        {
-    //            l_RaycastHit.collider.GetComponent<HitCollider>().Hit();
-    //        }
-    //        else
-    //        {
-    //            CreateShootParticles(l_RaycastHit.point, l_RaycastHit.normal);
-    //        }
+    void Shoot(Portal _Portal)
+    {
+        SetShootWeaponAnimation();
+        Ray l_Ray = m_Camera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0.0f));
+        if (Physics.Raycast(l_Ray, out RaycastHit l_RaycastHit, m_MaxShootDistance, m_ShootLayerMask.value))
+        {
+            if (_Portal.IsValidPosition(l_RaycastHit.point, l_RaycastHit.normal))
+            {
+                _Portal.gameObject.SetActive(true);
+            }
+            else
+                _Portal.gameObject.SetActive(false);
+        }
+        else
+            _Portal.gameObject.SetActive(false);
+    }
 
-    //    }
-    //}
 
-    //void SetIdleWeaponAnimation()
-    //{
-    //    m_Animation.CrossFade(m_IdleAnimationClip.name, 0.1f);
-    //}
+    void SetIdleWeaponAnimation()
+{
+    m_Animation.CrossFade(m_IdleAnimationClip.name, 0.1f);
+}
 
-    //void SetShootWeaponAnimation()
-    //{
-    //    m_Animation.CrossFade(m_ShootAnimationClip.name);
-    //    m_Animation.CrossFadeQueued(m_IdleAnimationClip.name, 0.3f);
-    //}
-    void SetDeath()
+void SetShootWeaponAnimation()
+{
+    m_Animation.CrossFade(m_ShootAnimationClip.name);
+    m_Animation.CrossFadeQueued(m_IdleAnimationClip.name, 0.3f);
+}
+void SetDeath()
     {
         
         Debug.Log("He muerto");
