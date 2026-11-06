@@ -10,9 +10,10 @@ GameObject:
   m_Component:
   - component: {fileID: 6485452430763181662}
   - component: {fileID: 5727948619062544846}
+  - component: {fileID: 7201464328139424102}
   m_Layer: 0
   m_Name: Blue Portal
-  m_TagString: Untagged
+  m_TagString: Portal
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -63,6 +64,28 @@ MonoBehaviour:
   - {fileID: 3546681831892388947}
   - {fileID: 5041952877474751509}
   - {fileID: 1779299196887807399}
+  m_CrosshairPortal: {fileID: 0}
+--- !u!65 &7201464328139424102
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 67917383923998938}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1.6038651, y: 2.5398536, z: 0.53568506}
+  m_Center: {x: 0, y: 0, z: 0.23215747}
 --- !u!1 &2624615170590550538
 GameObject:
   m_ObjectHideFlags: 0
