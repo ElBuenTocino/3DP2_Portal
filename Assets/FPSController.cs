@@ -28,6 +28,7 @@ public class FPSController : MonoBehaviour
     public KeyCode m_UpKeyCode = KeyCode.W;
     public KeyCode m_DownKeyCode = KeyCode.S;
     public KeyCode m_JumpKeyCode = KeyCode.Space;
+    public KeyCode m_GrabOjectKeyCode = KeyCode.E;
     public KeyCode m_RunKeyCode = KeyCode.LeftShift;
 
     public bool m_AngleLocked = false;
@@ -56,6 +57,15 @@ public class FPSController : MonoBehaviour
     public Portal BluePortal, OrangePortal;
     public float m_TeleportPortalOffset = 1.2f;
     public float m_MaxValidAngle = 40.0f;
+
+    [Header("Grab")]
+    public Transform m_GrabTransform;
+    bool m_AttachingObject;
+    bool m_ObjectAttached;
+    Rigidbody m_GrabObject;
+    float m_GrabTime;
+    public float m_TimeToGrab = 0.8f;
+    public float m_ShootAttachedObjectForce = 20.0f;
 
     private void Awake()
     {
@@ -164,8 +174,17 @@ public class FPSController : MonoBehaviour
             else if ((l_CollisionFlags & CollisionFlags.CollidedAbove) != 0 && m_VerticalSpeed > 0.0f)
                 m_VerticalSpeed = 0f;
 
+            if (CanGrabObject())
+            {
+                GrabObject();
+            }
+
             if (CanShoot() && MustShoot(out Portal portal))
                 Shoot(portal);
+
+            UpdateAttachingObject();
+
+            UpdateAttachedObject();
         }
         else
         {
@@ -173,10 +192,84 @@ public class FPSController : MonoBehaviour
         }
     }
 
+    bool CanGrabObject()
+    {
+        if (Input.GetKeyDown(m_GrabOjectKeyCode) && !m_AttachingObject && !m_ObjectAttached)
+        {
+            return true;
+        }
+        return false;
+    }
+
+    void GrabObject()
+    {
+        Ray l_Ray = m_Camera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0.0f));
+        if (Physics.Raycast(l_Ray, out RaycastHit l_RaycastHit, m_MaxShootDistance, m_ShootLayerMask.value, QueryTriggerInteraction.Ignore))
+        {
+            if (l_RaycastHit.collider.CompareTag("Cube"))
+            {
+                GrabObject(l_RaycastHit.collider);
+            }
+        }
+    }
+
+    void UpdateAttachingObject()
+    {
+        if (m_AttachingObject)
+        {
+            float l_DiffTime = Time.time - m_GrabTime;
+            float l_Pct = Mathf.Min(1.0f, l_DiffTime / m_TimeToGrab);
+            m_GrabObject.transform.position = Vector3.Lerp(m_GrabObject.transform.position, m_GrabTransform.position, l_Pct);
+            m_GrabObject.transform.rotation = Quaternion.Lerp(m_GrabObject.transform.rotation, m_GrabTransform.rotation, l_Pct);
+            if (l_Pct >= 0.9f)
+            {
+                m_AttachingObject = false;
+                m_ObjectAttached = true;
+            }
+        }
+    }
+    void UpdateAttachedObject()
+    {
+        if (m_ObjectAttached)
+        {
+            if (Input.GetKeyDown(m_GrabOjectKeyCode))
+            {
+                ThrowAttachedObject(0.0f);
+            }
+            else if (Input.GetMouseButtonDown(m_LeftShootButton))
+            {
+                ThrowAttachedObject(m_ShootAttachedObjectForce);
+            }
+        }
+    }
+
+    void ThrowAttachedObject(float Force)
+    {
+        m_GrabObject.transform.SetParent(null);
+        m_GrabObject.isKinematic = false;
+        m_GrabObject.linearVelocity = m_GrabTransform.transform.forward * Force;
+        m_ObjectAttached = false;
+    }
+
+    void GrabObject(Collider _collider)
+    {
+        m_GrabObject = _collider.GetComponent<Rigidbody>();
+        m_GrabObject.isKinematic = true;
+        m_AttachingObject = true;
+        m_GrabObject.transform.SetParent(m_GrabTransform);
+        m_GrabTime = Time.time;
+    }
+
     bool CanShoot()
     {
-        return true;
-        return CanShootBool;
+        if (!m_ObjectAttached && !m_AttachingObject)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
     public void SetCanShoot(int f)
     {
@@ -253,6 +346,10 @@ public class FPSController : MonoBehaviour
             {
                 Teleport(l_Portal);
             }
+        }
+        else if (other.GetComponent<CompanionSpawner>() != null)
+        {
+            other.GetComponent<CompanionSpawner>().Execute();
         }
     }
 
