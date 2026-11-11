@@ -6,6 +6,7 @@ TagManager:
   tags:
   - PortalEnabled
   - Portal
+  - Cube
   layers:
   - Default
   - TransparentFX
@@ -13,7 +14,7 @@ TagManager:
   - 
   - Water
   - UI
-  - 
+  - Cube
   - 
   - 
   - 
@@ -45,3 +46,4 @@ TagManager:
     locked: 0
   m_RenderingLayers:
   - Default
+  m_MigratedRenderPipelines: []
