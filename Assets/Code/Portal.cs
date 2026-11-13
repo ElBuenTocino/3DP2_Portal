@@ -15,9 +15,21 @@ public class Portal : MonoBehaviour
     public List<Transform> m_ValidPositions;
     public CrosshairPortal m_CrosshairPortal;
 
+    public LineRenderer m_Laser;
+    bool laserActive;
+    public bool LaserActive 
+    {   
+        get => laserActive; set
+        {
+            m_Laser.gameObject.SetActive(value);
+            laserActive = value;
+        }
+    }
+
     private void Start()
     {
         m_CrosshairPortal.FillCrosshair(false);
+        LaserActive = false;
     }
 
     private void Update()
@@ -68,5 +80,21 @@ public class Portal : MonoBehaviour
                 return false;
         }
         return true;
+    }
+
+    public void SetLaserOtherPortal(Vector3 localHitPosition, Quaternion localRot)
+    {
+        m_MirrorPortal.LaserActive = true;
+        m_MirrorPortal.m_Laser.transform.localPosition = localHitPosition;
+        m_MirrorPortal.m_Laser.transform.localRotation = localRot;
+    }
+
+    private void OnCollisionExit(Collision collision)
+    {
+        Debug.Log("Exit" + collision.collider.name);
+        if (collision.collider.GetComponent<Turret>() != null)
+        {
+            m_MirrorPortal.LaserActive = false;
+        }
     }
 }

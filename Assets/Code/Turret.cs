@@ -5,6 +5,9 @@ public class Turret : MonoBehaviour
     public LineRenderer m_Laser;
     public float m_MaxDistance;
     public LayerMask m_LaserLayerMask;
+    public float m_AngleToFall = 30.0f;
+
+    [Header("Teleport")]
     public float m_MaxValidAngle = 40.0f;
     public float m_TeleportPortalOffset = 1.2f;
     Rigidbody m_Rigidbody;
@@ -18,19 +21,39 @@ public class Turret : MonoBehaviour
     {
         Vector3 l_Position = Vector3.forward * m_MaxDistance;
 
-        Ray l_Ray = new Ray(m_Laser.transform.position, m_Laser.transform.forward);
-        if (Physics.Raycast(l_Ray, out RaycastHit l_RaycastHit, m_MaxDistance, m_LaserLayerMask, QueryTriggerInteraction.Ignore))
+        bool l_Fallen = Vector3.Dot(transform.up, Vector3.up) < Mathf.Cos(m_AngleToFall*Mathf.Deg2Rad);
+        m_Laser.gameObject.SetActive(!l_Fallen);
+
+        if (!l_Fallen)
         {
-            l_Position = Vector3.forward * l_RaycastHit.distance;
-
-            if (l_RaycastHit.collider.GetComponent<PlayerStats>() != null)
+            Ray l_Ray = new Ray(m_Laser.transform.position, m_Laser.transform.forward);
+            if (Physics.Raycast(l_Ray, out RaycastHit l_RaycastHit, m_MaxDistance, m_LaserLayerMask, QueryTriggerInteraction.Ignore))
             {
-                l_RaycastHit.collider.GetComponent<PlayerStats>().Die();
-            }
-        }
-        m_Laser.SetPosition(1, l_Position);
+                l_Position = Vector3.forward * l_RaycastHit.distance;
 
-        //if (transform.up)
+                if (l_RaycastHit.collider.GetComponent<RefractionCube>() != null)
+                {
+                    l_RaycastHit.collider.GetComponent<RefractionCube>().Refract();
+                }
+
+                if (l_RaycastHit.collider.GetComponent<PlayerStats>() != null)
+                {
+                    l_RaycastHit.collider.GetComponent<PlayerStats>().Die();
+                }
+
+                if (l_RaycastHit.collider.GetComponent<Portal>() != null)
+                {
+                    Vector3 localHit = (l_RaycastHit.collider.transform.InverseTransformPoint(l_RaycastHit.point));
+                    Quaternion localRot = transform.localRotation;
+                    
+                    l_RaycastHit.collider.GetComponent<Portal>().SetLaserOtherPortal(localHit, localRot);
+                }
+            }
+            m_Laser.SetPosition(1, l_Position);
+        }
+
+
+        //if (Vector3.Angle(transform.up, Vector3.up) < m_AngleToFall)
 
     }
 

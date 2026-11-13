@@ -1,6 +1,7 @@
 using NUnit.Framework;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class FPSController : MonoBehaviour
 {
@@ -55,9 +56,25 @@ public class FPSController : MonoBehaviour
     public bool isAlive;
 
     [Header("Portals")]
-    public Portal BluePortal, OrangePortal;
+    public Portal BluePortal, OrangePortal, PreviewPortal;
     public float m_TeleportPortalOffset = 1.2f;
     public float m_MaxValidAngle = 40.0f;
+
+    float portalScaleChange;
+    public float PortalScaleChange
+    {
+        get
+        {
+            return portalScaleChange;
+        }
+        set
+        {
+            portalScaleChange = value;
+            portalScaleChange = Mathf.Clamp(value, 0.5f, 2f);
+        }
+    }
+
+    public float PortalScaleChangeSpeed;
 
     [Header("Grab")]
     public Transform m_GrabTransform;
@@ -177,6 +194,8 @@ public class FPSController : MonoBehaviour
                 GrabObject();
             }
 
+            ResizePortal(PreviewPortal);
+
             if (CanShoot() && MustShoot(out Portal portal))
                 Shoot(portal);
 
@@ -292,9 +311,18 @@ public class FPSController : MonoBehaviour
 
     bool MustShoot(out Portal portal)
     {
-        if (Input.GetMouseButtonDown(m_LeftShootButton))
+        if (Input.GetMouseButton(m_LeftShootButton))
         {
+            portal = PreviewPortal;
+            portal.transform.localScale = new Vector3(PortalScaleChange, PortalScaleChange, PortalScaleChange);
+            return true;
+        }
+        else if(Input.GetMouseButtonUp(m_LeftShootButton))
+        {
+            PreviewPortal.gameObject.SetActive(false);
+            PreviewPortal.transform.localScale = new Vector3(1,1,1);
             portal = BluePortal;
+            portal.transform.localScale = new Vector3(PortalScaleChange, PortalScaleChange, PortalScaleChange);
             return true;
         }
         else if (Input.GetMouseButtonDown(m_RightShootButton))
@@ -304,6 +332,26 @@ public class FPSController : MonoBehaviour
         }
         portal = null;
         return false;
+    }
+
+    void ResizePortal(Portal _Portal)
+    {
+        if (Input.GetMouseButton(m_LeftShootButton))
+        {
+            if (Input.GetAxis("Mouse ScrollWheel") > 0f)
+            {
+                PortalScaleChange += PortalScaleChangeSpeed * Time.deltaTime;
+            }
+            if (Input.GetAxis("Mouse ScrollWheel") < 0f)
+            {
+                PortalScaleChange -= PortalScaleChangeSpeed * Time.deltaTime;
+            }
+
+            PortalScaleChange = Mathf.Clamp(PortalScaleChange, 0.5f, 2f);
+
+            Debug.Log("Portal scale change: " + PortalScaleChange);
+            //Debug.Log(Input.GetAxis("Mouse ScrollWheel"));
+        }
     }
 
     void Shoot(Portal _Portal)

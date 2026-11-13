@@ -32,7 +32,10 @@ public class PlayerRespawn : MonoBehaviour
 
     public void RespawnPlayer()
     {
-        gameObject.transform.position = CurrentRespawn.point.position;
+        if (CurrentRespawn != null)
+        {
+            gameObject.transform.position = CurrentRespawn.point.position;
+        }
         Physics.SyncTransforms();
     }
 }
